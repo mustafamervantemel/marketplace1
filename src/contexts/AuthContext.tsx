@@ -28,33 +28,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        await fetchUserProfile(session.user.id);
+    // For demo purposes, skip authentication and just set loading to false
+    const initDemo = async () => {
+      try {
+        // Try to get session, but handle errors gracefully
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setSupabaseUser(session.user);
+          await fetchUserProfile(session.user.id);
+        }
+      } catch (error) {
+        console.log('Demo mode: Supabase not configured, continuing without auth');
       }
       setLoading(false);
     };
 
-    getSession();
+    initDemo();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setSupabaseUser(session.user);
-          await fetchUserProfile(session.user.id);
-        } else {
-          setSupabaseUser(null);
-          setUser(null);
+    // Try to listen for auth changes, but handle errors gracefully
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (session?.user) {
+            setSupabaseUser(session.user);
+            await fetchUserProfile(session.user.id);
+          } else {
+            setSupabaseUser(null);
+            setUser(null);
+          }
+          setLoading(false);
         }
-        setLoading(false);
-      }
-    );
+      );
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      console.log('Demo mode: Auth listener not available');
+    }
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -68,50 +77,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       setUser(data);
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.log('Demo mode: User profile fetch not available, continuing without user data');
     }
   };
 
   const signUp = async (email: string, password: string, userData: any) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: userData
-      }
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData
+        }
+      });
 
-    if (data.user && !error) {
-      // Create user profile
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: data.user.id,
-            email: data.user.email,
-            full_name: userData.full_name,
-            user_type: userData.user_type || 'customer',
-            phone: userData.phone,
-            company_name: userData.company_name,
-            tax_number: userData.tax_number,
-            iban: userData.iban,
-          }
-        ]);
+      if (data.user && !error) {
+        // Create user profile
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              full_name: userData.full_name,
+              user_type: userData.user_type || 'customer',
+              phone: userData.phone,
+              company_name: userData.company_name,
+              tax_number: userData.tax_number,
+              iban: userData.iban,
+            }
+          ]);
 
-      if (profileError) {
-        console.error('Error creating user profile:', profileError);
+        if (profileError) {
+          console.log('Demo mode: User profile creation not available');
+        }
       }
+
+      return { data, error };
+    } catch (error) {
+      console.log('Demo mode: Sign up not available');
+      return { data: null, error: error };
     }
-
-    return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
-    return await supabase.auth.signInWithPassword({ email, password });
+    try {
+      return await supabase.auth.signInWithPassword({ email, password });
+    } catch (error) {
+      console.log('Demo mode: Sign in not available');
+      return { data: null, error: error };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.log('Demo mode: Sign out not available');
+    }
     setUser(null);
     setSupabaseUser(null);
   };

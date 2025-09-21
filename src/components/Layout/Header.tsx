@@ -20,7 +20,7 @@ const Header: React.FC = () => {
       <div className="bg-orange-500 text-white py-2">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
-            <span>Demo Pazaryeri - Müşteriniz için hazırlandı</span>
+            <span>Demo Pazaryeri</span>
             <div className="flex items-center space-x-4">
               <Link
                 to="/seller/dashboard"
@@ -45,7 +45,7 @@ const Header: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <div className="text-orange-500 font-bold text-2xl">
-              trendyol
+              varonsoft
             </div>
           </Link>
 

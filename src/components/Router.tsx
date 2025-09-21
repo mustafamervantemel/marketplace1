@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 // Layouts
 import Layout from './Layout/Layout';
+import SellerLayout from './Layout/SellerLayout';
 
 // Pages
 import HomePage from '../pages/HomePage';
@@ -113,9 +114,15 @@ const AppRouter: React.FC = () => {
           } />
 
           {/* Seller routes - Direct access for demo */}
-          <Route path="seller/dashboard" element={<SellerDashboard />} />
-          <Route path="seller/products" element={<SellerProducts />} />
-          <Route path="seller/orders" element={<SellerOrders />} />
+          <Route path="seller/*" element={
+            <SellerLayout>
+              <Routes>
+                <Route path="dashboard" element={<SellerDashboard />} />
+                <Route path="products" element={<SellerProducts />} />
+                <Route path="orders" element={<SellerOrders />} />
+              </Routes>
+            </SellerLayout>
+          } />
 
           {/* Admin routes */}
           <Route path="admin/dashboard" element={
